@@ -10,7 +10,7 @@ def show_images():
     local_image_filename = random.choice(os.listdir("static"))
     
     # Using Flask's url_for to generate the image path
-    local_image_path = url_for('static', filename=local_image_filename)
+    local_image_path = url_for('test', filename=local_image_filename)
     
     # Web image URL
     web_image_url = "https://thispersondoesnotexist.com"
