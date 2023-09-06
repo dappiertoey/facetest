@@ -6,15 +6,17 @@ app = Flask(__name__)
 
 @app.route('/')
 def show_images():
-    # Get a random image from the static folder
     local_image_filename = random.choice(os.listdir("static"))
-    
-    # Using Flask's url_for to generate the image path
     local_image_path = url_for('static', filename=local_image_filename)
-    
-    # Web image URL
+
     web_image_url = "https://thispersondoesnotexist.com"
-    
+
+    images = [
+        {"id": "local_image", "src": local_image_path, "callback": "displayMessage('success')"},
+        {"id": "web_image", "src": web_image_url, "callback": "displayMessage('failure')"}
+    ]
+    random.shuffle(images)  # This will randomize the position
+
     return render_template_string("""
         <html>
             <head>
@@ -61,11 +63,11 @@ def show_images():
                 <h1>Welcome to the EY AI Image Guessing Game!</h1>
                 <p>Guess which image is AI Generated and which is real. Click on an image to make your choice.</p>
                 <div class="image-container">
-                    <!-- Attach onclick events to the images -->
-                    <img id="local_image" src="{{ local_image_path }}" alt="Local Image" onclick="displayMessage('success')">
-                    <img id="web_image" src="{{ web_image_url }}" alt="Web Image" onclick="displayMessage('failure')">
+                    <!-- Dynamic rendering based on the randomized list -->
+                    <img id="{{ images[0].id }}" src="{{ images[0].src }}" alt="Image 1" onclick="{{ images[0].callback }}">
+                    <img id="{{ images[1].id }}" src="{{ images[1].src }}" alt="Image 2" onclick="{{ images[1].callback }}">
                 </div>
-                <div id="message"></div> <!-- This div will display the success message -->
+                <div id="message"></div> <!-- This div will display the success or failure message -->
                 <button id="playAgainButton" style="display: none;" onclick="location.reload();">Play Again</button>
                 
                 <script>
@@ -74,7 +76,7 @@ def show_images():
                         const playAgainButton = document.getElementById('playAgainButton');
                         const localImage = document.getElementById('local_image');
                         const webImage = document.getElementById('web_image');
-                        
+
                         // Disable further image clicks
                         localImage.onclick = null;
                         webImage.onclick = null;
@@ -82,14 +84,14 @@ def show_images():
                         // Highlight correct and wrong images
                         if (type === 'success') {
                             messageDiv.textContent = 'Success!';
-                            messageDiv.style.color = 'green';  /* Make the success message green */
+                            messageDiv.style.color = 'green';
                             localImage.style.border = "5px solid green";
                             webImage.style.border = "5px solid red";
                         } else {
                             messageDiv.textContent = 'Not successful.';
-                            messageDiv.style.color = 'red';    /* Make the failure message red */
-                            webImage.style.border = "5px solid green";
-                            localImage.style.border = "5px solid red";
+                            messageDiv.style.color = 'red';
+                            localImage.style.border = "5px solid green";
+                            webImage.style.border = "5px solid red";
                         }
 
                         // Show play again button
@@ -98,7 +100,8 @@ def show_images():
                 </script>
             </body>
         </html>
-    """, local_image_path=local_image_path, web_image_url=web_image_url)
+    """, images=images)
 
 if __name__ == "__main__":
     app.run(port=8080)
+
