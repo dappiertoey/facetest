@@ -7,7 +7,7 @@ app = Flask(__name__)
 @app.route('/')
 def show_images():
     # Get a random image from the static folder
-    local_image_filename = random.choice(os.listdir("static"))
+    local_image_filename = random.choice(os.listdir("test"))
     
     # Using Flask's url_for to generate the image path
     local_image_path = url_for('test', filename=local_image_filename)
