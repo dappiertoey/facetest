@@ -1,16 +1,8 @@
 from flask import Flask, render_template_string, url_for
-from azure.cosmos import exceptions, CosmosClient, PartitionKey
 import os
 import random
 
 app = Flask(__name__)
-
-# Azure Cosmos DB configuration
-url = "https://aifacetest.documents.azure.com:443/"
-key = "WOEPydZ8aUEJBM3kVcViJnwPeT1WgsieJCPCHhXo1zgbRJiwSgxzivpZJw0yvxXps8PYSLEHlPdlACDbbpnGJQ=="
-client = CosmosClient(url, credential=key)
-database = client.get_database_client("GuessingGameDB")
-container = database.get_container_client("GuessStatistics")
 
 @app.route('/')
 def show_images():
@@ -20,44 +12,95 @@ def show_images():
     web_image_url = "https://thispersondoesnotexist.com"
 
     images = [
-        {"id": "local_image", "src": local_image_path, "callback": "submitGuess('local_image')"},
-        {"id": "web_image", "src": web_image_url, "callback": "submitGuess('web_image')"}
+        {"id": "local_image", "src": local_image_path, "callback": "displayMessage('success')"},
+        {"id": "web_image", "src": web_image_url, "callback": "displayMessage('failure')"}
     ]
-    random.shuffle(images)
+    random.shuffle(images)  # This will randomize the position
 
-    stats = get_stats() # Fetch statistics from DB
-    return render_template_string("""...""",
-                                  correct_guesses=stats['correct'], incorrect_guesses=stats['incorrect'],
-                                  ...)
+    return render_template_string("""
+        <html>
+            <head>
+                <title>EY AI Image Guessing Game</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        text-align: center;
+                        margin-top: 50px;
+                    }
+                    .image-container {
+                        display: flex;
+                        justify-content: center;
+                    }
+                    img {
+                        margin: 10px 50px;  /* Increasing space between images */
+                        width: 400px;
+                        height: 400px;
+                        cursor: pointer;
+                    }
+                    #message {
+                        font-size: 24px;   /* Make the message font larger */
+                        font-weight: bold; /* Bold the message */
+                        margin: 20px 0;
+                        color: blue;       /* Add color to the message */
+                    }
+                    #playAgainButton {
+                        display: block;    /* Make the button a block element to center it */
+                        margin: 20px auto; /* Center the button horizontally */
+                        padding: 10px 20px;
+                        font-size: 16px;
+                        border: none;
+                        border-radius: 5px;
+                        background-color: #4CAF50;
+                        color: white;
+                        cursor: pointer;
+                    }
+                    #playAgainButton:hover {
+                        background-color: #45a049;
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Welcome to the EY AI Image Guessing Game!</h1>
+                <p>Guess which image is AI Generated and which is real. Click on an image to make your choice.</p>
+                <div class="image-container">
+                    <!-- Dynamic rendering based on the randomized list -->
+                    <img id="{{ images[0].id }}" src="{{ images[0].src }}" alt="Image 1" onclick="{{ images[0].callback }}">
+                    <img id="{{ images[1].id }}" src="{{ images[1].src }}" alt="Image 2" onclick="{{ images[1].callback }}">
+                </div>
+                <div id="message"></div> <!-- This div will display the success or failure message -->
+                <button id="playAgainButton" style="display: none;" onclick="location.reload();">Play Again</button>
+                
+                <script>
+                    function displayMessage(type) {
+                        const messageDiv = document.getElementById('message');
+                        const playAgainButton = document.getElementById('playAgainButton');
+                        const localImage = document.getElementById('local_image');
+                        const webImage = document.getElementById('web_image');
 
-@app.route('/submit/<guess>')
-def submit_guess(guess):
-    if guess == "local_image":
-        # Increment correct guess in the database
-        update_stats(True)
-    else:
-        # Increment incorrect guess in the database
-        update_stats(False)
+                        // Disable further image clicks
+                        localImage.onclick = null;
+                        webImage.onclick = null;
 
-    return jsonify(success=True)
+                        // Highlight correct and wrong images
+                        if (type === 'success') {
+                            messageDiv.textContent = 'Success!';
+                            messageDiv.style.color = 'green';
+                            localImage.style.border = "5px solid green";
+                            webImage.style.border = "5px solid red";
+                        } else {
+                            messageDiv.textContent = 'Not successful.';
+                            messageDiv.style.color = 'red';
+                            localImage.style.border = "5px solid green";
+                            webImage.style.border = "5px solid red";
+                        }
 
-def get_stats():
-    # Fetch the statistics from Azure Cosmos DB.
-    # If not present, initialize with zeros.
-    try:
-        item = container.read_item(item="stats", partition_key="stats")
-        return item
-    except exceptions.CosmosResourceNotFoundError:
-        container.create_item(body={"id": "stats", "correct": 0, "incorrect": 0, "partitionKey": "stats"})
-        return {"correct": 0, "incorrect": 0}
-
-def update_stats(is_correct):
-    stats = get_stats()
-    if is_correct:
-        stats["correct"] += 1
-    else:
-        stats["incorrect"] += 1
-    container.replace_item(item=stats, body=stats)
+                        // Show play again button
+                        playAgainButton.style.display = 'block';
+                    }
+                </script>
+            </body>
+        </html>
+    """, images=images)
 
 if __name__ == "__main__":
     app.run(port=8080)
