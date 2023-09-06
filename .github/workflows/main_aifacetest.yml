@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'AiFaceTest'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_28C2819A12B044EEBBE3E60C0005FC0C }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CC39596F12294850BC639B43888B67A9 }}
