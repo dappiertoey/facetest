@@ -88,7 +88,7 @@ def show_images():
                             localImage.style.border = "5px solid green";
                             webImage.style.border = "5px solid red";
                         } else {
-                            messageDiv.textContent = 'Not successful.';
+                            messageDiv.textContent = 'Incorrect!';
                             messageDiv.style.color = 'red';
                             localImage.style.border = "5px solid green";
                             webImage.style.border = "5px solid red";
