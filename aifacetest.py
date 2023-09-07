@@ -4,23 +4,12 @@ import os
 import random
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///guesses.db'
-db = SQLAlchemy(app)
-
-class Guess(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    result = db.Column(db.String(50))
 
 @app.route('/')
 def show_images():
-    success_count = Guess.query.filter_by(result='success').count()
-    failure_count = Guess.query.filter_by(result='failure').count()
+    
 
-    total_count = success_count + failure_count
-    if total_count == 0:
-        percentage_correct = 0
-    else:
-        percentage_correct = (success_count / total_count) * 100
+   
         
     local_image_filename = random.choice(os.listdir("static"))
     local_image_path = url_for('static', filename=local_image_filename)
@@ -83,10 +72,6 @@ def show_images():
                 </div>
                 <div id="message"></div>
                 <button id="playAgainButton" style="display: none;" onclick="location.reload();">Play Again</button>
-
-                <p>Correct guesses: {{ success_count }}</p>
-                <p>Incorrect guesses: {{ failure_count }}</p>
-                <p>Percentage correct: {{ percentage_correct | round(2) }}%</p>
                 
                 <script>
                     function displayMessage(type) {
@@ -112,28 +97,14 @@ def show_images():
 
                         playAgainButton.style.display = 'block';
 
-                        // Update guess in the database
-                        fetch(`/update_guess/${type}`, {
-                            method: 'POST'
-                        }).then(response => {
-                            if (!response.ok) {
-                                console.error("Failed to update guess count.");
+                        
                             }
                         });
                     }
                 </script>
             </body>
         </html>
-    """, images=images, success_count=success_count, failure_count=failure_count, percentage_correct=percentage_correct)
-
-@app.route('/update_guess/<string:result>', methods=['POST'])
-def update_guess(result):
-    new_guess = Guess(result=result)
-    db.session.add(new_guess)
-    db.session.commit()
-    return "Success!", 200
+    """, images=images)
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(port=8080)
