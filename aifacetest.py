@@ -1,5 +1,4 @@
 from flask import Flask, render_template_string, url_for
-from flask_sqlalchemy import SQLAlchemy
 import os
 import random
 
@@ -7,10 +6,6 @@ app = Flask(__name__)
 
 @app.route('/')
 def show_images():
-    
-
-   
-        
     local_image_filename = random.choice(os.listdir("static"))
     local_image_path = url_for('static', filename=local_image_filename)
     web_image_url = "https://thispersondoesnotexist.com"
@@ -22,7 +17,7 @@ def show_images():
     random.shuffle(images)
 
     return render_template_string("""
-        <html>
+    <html>
             <head>
                 <title>EY AI Image Guessing Game</title>
                 <style>
@@ -72,7 +67,7 @@ def show_images():
                 </div>
                 <div id="message"></div>
                 <button id="playAgainButton" style="display: none;" onclick="location.reload();">Play Again</button>
-                
+
                 <script>
                     function displayMessage(type) {
                         const messageDiv = document.getElementById('message');
@@ -80,14 +75,15 @@ def show_images():
                         const localImage = document.getElementById('local_image');
                         const webImage = document.getElementById('web_image');
                         
+                        // Disabling further clicks once a choice has been made
                         localImage.onclick = null;
                         webImage.onclick = null;
 
                         if (type === 'success') {
-                            messageDiv.textContent = 'Success!';
+                            messageDiv.textContent = 'Success! You found the real image!';
                             messageDiv.style.color = 'green';
                         } else {
-                            messageDiv.textContent = 'Not successful.';
+                            messageDiv.textContent = 'Oops! You clicked the AI-generated image!';
                             messageDiv.style.color = 'red';
                         }
 
@@ -96,10 +92,6 @@ def show_images():
                         webImage.style.border = "5px solid red";
 
                         playAgainButton.style.display = 'block';
-
-                        
-                            }
-                        });
                     }
                 </script>
             </body>
