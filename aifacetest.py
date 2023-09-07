@@ -23,6 +23,7 @@ def show_images():
                 <style>
                     body {
                         font-family: Arial, sans-serif;
+                        background-color: white;
                         text-align: center;
                         margin-top: 50px;
                     }
