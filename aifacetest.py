@@ -61,7 +61,7 @@ def show_images():
             </head>
             <body>
                 <h1>Welcome to the EY AI Image Guessing Game!</h1>
-                <p>Guess which image is AI Generated and which is real. Click on an image to make your choice.</p>
+                <p>Guess which image is AI Generated and which is real. Select the image you think is real!.</p>
                 <div class="image-container">
                     <img id="{{ images[0].id }}" src="{{ images[0].src }}" alt="Image 1" onclick="{{ images[0].callback }}">
                     <img id="{{ images[1].id }}" src="{{ images[1].src }}" alt="Image 2" onclick="{{ images[1].callback }}">
